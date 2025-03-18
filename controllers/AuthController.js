@@ -24,7 +24,16 @@ exports.signIn = async (req, res) => {
                 message: "invalid email or password"
             })
         }
-    } catch (error) {
 
+        res.json({
+            _id: user.id,
+            name: user.name,
+            role: user.role,
+            email: user.email,
+            token: generateToken(user._id, user.name)
+        })
+
+    } catch (error) {
+        res.status(500).json({ message: error })
     }
 }

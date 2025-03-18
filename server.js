@@ -2,20 +2,36 @@ const express = require("express")
 const cors = require("cors")
 const bodyParser = require("body-parser")
 const dotenv = require("dotenv")
+const connectDB = require("./config/db")
+const morgan = require("morgan")
 
-dotenv.config
+dotenv.config()
+connectDB()
 
 const app = express()
 
 app.use(express.json())
 app.use(cors())
 app.use(bodyParser.json())
+app.use(morgan())
+
+const authRoutes = require("./routes/AuthRoutes")
+const fileRoutes = require("./routes/FileRoutes")
+const productRoutes = require("./routes/ProductRoutes")
+const transactionRoutes = require("./routes/TransactionRoutes")
+const userRoutes = require("./routes/UserRoutes")
+
+app.use("/api/auth", authRoutes)
+app.use("/api/files", fileRoutes)
+app.use("/api/products", productRoutes)
+app.use("/api/transactions", transactionRoutes)
+app.use("/api/users", userRoutes)
 
 app.listen(3000, () => {
     console.log(`App running on http://localhost:3000`)
 })
 
-app.get("/api", (_, res) => {
+app.get("/", (_, res) => {
     res.status(200).json({
         message: "OK"
     })
