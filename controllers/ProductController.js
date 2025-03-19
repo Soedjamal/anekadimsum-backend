@@ -34,14 +34,16 @@ exports.createProduct = async (req, res) => {
   try {
     // const result = await cloudinary.uploader.upload(req.file.path)
 
-    const product = await Product.insertOne({
+    const product = await Product({
       name: name,
       price: price,
       // thumbnail: result?.secure_url,
       // cloudniary_id: result?.public_id
-      thumbnail: new Date().getTime(),
-      cloudniary_id: Math.random(),
+      thumbnail: "fsefsegsegseg",
+      cloudniary_id: "awfguyegfiuegfseg"
     });
+
+    await product.save()
 
     res.status(201).json(product);
   } catch (error) {

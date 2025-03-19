@@ -1,4 +1,3 @@
-const Product = require("../models/Product")
 const Transaction = require("../models/Transaction")
 const midtransClient = require("midtrans-client")
 
@@ -36,6 +35,8 @@ exports.createTransaction = async (req, res) => {
             midtrans_url: transactionUrl,
             transaction_id: orderId
         })
+
+        res.status(200).json(transactionData)
 
     } catch (error) {
 
