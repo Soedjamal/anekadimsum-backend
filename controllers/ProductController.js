@@ -29,25 +29,28 @@ exports.getProductById = async (req, res) => {
 };
 
 exports.createProduct = async (req, res) => {
-  const { name, price } = req.body;
-
+  console.log(req.file.path);
+  console.log(req.body);
   try {
-    // const result = await cloudinary.uploader.upload(req.file.path)
+    const { name, price } = req.body;
 
-    const product = await Product({
-      name: name,
-      price: price,
-      // thumbnail: result?.secure_url,
-      // cloudniary_id: result?.public_id
-      thumbnail: "fsefsegsegseg",
-      cloudniary_id: "awfguyegfiuegfseg"
+    if (!req.file) {
+      return res.status(400).json({ message: "Thumbnail is required" });
+    }
+
+    const result = await cloudinary.uploader.upload(req.file.path);
+
+    const product = await Product.create({
+      name,
+      price,
+      thumbnail: result.secure_url,
+      cloudinary_id: result.public_id,
     });
-
-    await product.save()
 
     res.status(201).json(product);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -57,9 +60,9 @@ exports.deleteProducts = async (req, res) => {
   try {
     const product = await Product.findById(id).select("cloudniary_id");
 
-    await cloudinary.uploader.destroy(product.cloudniary_id);
+    await cloudinary.uploader.destroy(product.cloudinary_id);
 
-    await Product.deleteOne(id);
+    await Product.deleteOne({ _id: id });
 
     return res.status(200).json({
       message: "success delete product",
@@ -85,7 +88,7 @@ exports.updateProduct = async (req, res) => {
       });
     }
 
-    await cloudinary.uploader.destroy(product.cloudniary_id);
+    await cloudinary.uploader.destroy(product.cloudinary_id);
 
     const result = await cloudinary.uploader.upload(req.file.path);
 
@@ -93,7 +96,7 @@ exports.updateProduct = async (req, res) => {
       name: name,
       price: price,
       thumbnail: result?.secure_url || product.thumbnail,
-      cloudniary_id: result?.public_id || product.cloudniary_id,
+      cloudniary_id: result?.public_id || product.cloudinary_id,
     });
 
     return res.status(202).json(update);
@@ -101,4 +104,3 @@ exports.updateProduct = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
