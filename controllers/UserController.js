@@ -21,6 +21,14 @@ exports.createUser = async (req, res) => {
     const { name, email, password } = req.body
     try {
 
+        const currentUser = async () => {
+            return await User.findOne({ equals: email })
+        }
+
+        if (email === currentUser.email) {
+            return res.status(400).json({ message: "user already exists" })
+        }
+
         const user = await User.insertOne({
             name: name,
             email: email,

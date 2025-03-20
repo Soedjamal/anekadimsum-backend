@@ -1,5 +1,7 @@
 const cloudinary = require("../config/cloudinary");
 const Product = require("../models/Product");
+const streamifier = require("streamifier");
+
 
 exports.getAllProducts = async (req, res) => {
   try {
@@ -29,7 +31,6 @@ exports.getProductById = async (req, res) => {
 };
 
 exports.createProduct = async (req, res) => {
-  console.log(req.file.path);
   console.log(req.body);
   try {
     const { name, price } = req.body;
@@ -38,7 +39,19 @@ exports.createProduct = async (req, res) => {
       return res.status(400).json({ message: "Thumbnail is required" });
     }
 
-    const result = await cloudinary.uploader.upload(req.file.path);
+
+    const uploadToCloudinary = (buffer) => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream((error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        });
+
+        streamifier.createReadStream(buffer).pipe(stream);
+      });
+    };
+
+    const result = await uploadToCloudinary(req.file.buffer);
 
     const product = await Product.create({
       name,
@@ -58,7 +71,9 @@ exports.deleteProducts = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const product = await Product.findById(id).select("cloudniary_id");
+    const product = await Product.findById(id).select("cloudinary_id");
+
+    console.log(product)
 
     await cloudinary.uploader.destroy(product.cloudinary_id);
 

@@ -8,7 +8,8 @@ const {
 } = require("../controllers/ProductController");
 const multer = require("multer");
 
-const upload = multer({ dest: "uploads/products/" });
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 const router = express.Router();
 

@@ -2,7 +2,11 @@ const express = require("express")
 const { uploadFile } = require("../controllers/FileController")
 const multer = require("multer")
 
-const upload = multer({ dest: "uploads/" })
+const upload = multer({
+    dest: "uploads/", fileFilter: () => {
+
+    }
+})
 
 const router = express.Router()
 
