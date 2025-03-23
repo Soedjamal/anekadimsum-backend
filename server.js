@@ -27,8 +27,9 @@ app.use("/api/products", productRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/users", userRoutes);
 
-app.listen(3000, () => {
-  console.log(`App running on http://localhost:3000`);
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`App running on port ${port}`);
 });
 
 app.get("/", (_, res) => {
@@ -38,4 +39,3 @@ app.get("/", (_, res) => {
 });
 
 module.exports.app;
-
