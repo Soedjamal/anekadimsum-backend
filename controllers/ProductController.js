@@ -88,32 +88,36 @@ exports.deleteProducts = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
-  const { name, price } = req.body;
+  const { name, price, stock } = req.body;
 
   try {
     const product = await Product.findById(id).select(
-      "thumbnail",
-      "cloudniary_id",
+      "thumbnail cloudinary_id",
     );
 
     if (!product) {
-      return res.status(404).json({
-        message: "product not found",
-      });
+      return res.status(404).json({ message: "Product not found" });
     }
 
-    await cloudinary.uploader.destroy(product.cloudinary_id);
+    const updateFields = {};
+    if (name) updateFields.name = name;
+    if (price) updateFields.price = price;
+    if (stock) updateFields.stock = stock;
 
-    const result = await cloudinary.uploader.upload(req.file.path);
+    if (req.file) {
+      await cloudinary.uploader.destroy(product.cloudinary_id);
+      const result = await cloudinary.uploader.upload(req.file.path);
+      updateFields.thumbnail = result.secure_url;
+      updateFields.cloudinary_id = result.public_id;
+    }
 
-    const update = Product.findByIdAndUpdate(id, {
-      name: name,
-      price: price,
-      thumbnail: result?.secure_url || product.thumbnail,
-      cloudniary_id: result?.public_id || product.cloudinary_id,
-    });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      { $set: updateFields },
+      { new: true },
+    );
 
-    return res.status(202).json(update);
+    return res.status(202).json(updatedProduct);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
