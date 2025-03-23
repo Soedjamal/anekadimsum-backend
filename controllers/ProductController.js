@@ -1,6 +1,5 @@
 const cloudinary = require("../config/cloudinary");
 const Product = require("../models/Product");
-const streamifier = require("streamifier");
 
 exports.getAllProducts = async (req, res) => {
   try {
@@ -30,7 +29,6 @@ exports.getProductById = async (req, res) => {
 };
 
 exports.createProduct = async (req, res) => {
-  console.log(req.body);
   try {
     const { name, price, stock } = req.body;
 
@@ -38,25 +36,12 @@ exports.createProduct = async (req, res) => {
       return res.status(400).json({ message: "Thumbnail is required" });
     }
 
-    const uploadToCloudinary = (buffer) => {
-      return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream((error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        });
-
-        streamifier.createReadStream(buffer).pipe(stream);
-      });
-    };
-
-    const result = await uploadToCloudinary(req.file.buffer);
-
     const product = await Product.create({
       name,
       price,
       stock,
-      thumbnail: result.secure_url,
-      cloudinary_id: result.public_id,
+      thumbnail: req.file.path,
+      cloudinary_id: req.file.filename,
     });
 
     res.status(201).json(product);
@@ -87,17 +72,12 @@ exports.deleteProducts = async (req, res) => {
 };
 
 exports.updateProduct = async (req, res) => {
-  const { id } = req.params;
-  const { name, price, stock } = req.body;
-
   try {
-    const product = await Product.findById(id).select(
-      "thumbnail cloudinary_id",
-    );
+    const { id } = req.params;
+    const { name, price, stock } = req.body;
 
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
+    const product = await Product.findById(id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
 
     const updateFields = {};
     if (name) updateFields.name = name;
@@ -105,20 +85,16 @@ exports.updateProduct = async (req, res) => {
     if (stock) updateFields.stock = stock;
 
     if (req.file) {
-      await cloudinary.uploader.destroy(product.cloudinary_id);
-      const result = await cloudinary.uploader.upload(req.file.path);
-      updateFields.thumbnail = result.secure_url;
-      updateFields.cloudinary_id = result.public_id;
+      updateFields.thumbnail = req.file.path;
+      updateFields.cloudinary_id = req.file.filename;
     }
 
-    const updatedProduct = await Product.findByIdAndUpdate(
-      id,
-      { $set: updateFields },
-      { new: true },
-    );
+    const updatedProduct = await Product.findByIdAndUpdate(id, updateFields, {
+      new: true,
+    });
 
-    return res.status(202).json(updatedProduct);
+    res.status(202).json(updatedProduct);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
