@@ -1,21 +1,22 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
+
+let cachedDb = null;
 
 const connectDB = async () => {
-    try {
-        await mongoose.connect(process.env.DATABASE_URL)
+  if (cachedDb) {
+    return cachedDb;
+  }
 
-        mongoose.connection.once("open", () => {
-            console.log("Database connected") // Pastikan ini muncul
-        })
+  try {
+    const conn = await mongoose.connect(process.env.DATABASE_URL);
 
-        mongoose.connection.on("error", (err) => {
-            console.error("Database connection error:", err)
-        })
+    cachedDb = conn;
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    return conn;
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+    process.exit(1);
+  }
+};
 
-    } catch (error) {
-        console.error(error.message)
-        process.exit(1)
-    }
-}
-
-module.exports = connectDB
+module.exports = connectDB;
