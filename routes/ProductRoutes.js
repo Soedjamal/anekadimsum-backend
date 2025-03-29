@@ -6,6 +6,9 @@ const {
   createProduct,
   updateProduct,
   deleteProducts,
+  updateProductByTRX,
+  updateAllStock,
+  resetStockAndSold,
 } = require("../controllers/ProductController");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const multer = require("multer");
@@ -26,6 +29,9 @@ router.get("/", getAllProducts);
 router.get("/:id", getProductById);
 router.post("/", upload.single("thumbnail"), createProduct);
 router.patch("/:id", upload.single("thumbnail"), updateProduct);
+router.patch("/trx/:id", updateProductByTRX);
+router.patch("/", updateAllStock);
+router.delete("/del", resetStockAndSold);
 router.delete("/:id", deleteProducts);
 
 module.exports = router;

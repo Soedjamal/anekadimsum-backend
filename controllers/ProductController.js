@@ -1,5 +1,6 @@
 const cloudinary = require("../config/cloudinary");
 const Product = require("../models/Product");
+const Transaction = require("../models/Transaction");
 
 exports.getAllProducts = async (req, res) => {
   try {
@@ -74,7 +75,7 @@ exports.deleteProducts = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, price, stock } = req.body;
+    const { name, price, stock, sold } = req.body;
 
     const product = await Product.findById(id);
     if (!product) return res.status(404).json({ message: "Product not found" });
@@ -83,6 +84,7 @@ exports.updateProduct = async (req, res) => {
     if (name) updateFields.name = name;
     if (price) updateFields.price = price;
     if (stock) updateFields.stock = stock;
+    if (sold) updateFields.stock = sold;
 
     if (req.file) {
       updateFields.thumbnail = req.file.path;
@@ -94,6 +96,60 @@ exports.updateProduct = async (req, res) => {
     });
 
     res.status(202).json(updatedProduct);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.updateProductByTRX = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const productData = await Transaction.findOne({
+      transaction_id: id,
+    }).select("product_id quantity");
+
+    const result = await Product.findByIdAndUpdate(
+      productData.product_id,
+      {
+        $inc: { stock: -productData.quantity, sold: productData.quantity },
+      },
+      { new: true },
+    );
+
+    res.status(201).json({
+      message: "payment success",
+      data: {
+        stock: result.stock,
+        sold: result.sold,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.resetStockAndSold = async (req, res) => {
+  try {
+    const result = await Product.updateMany(
+      {},
+      { $set: { stock: 0, sold: 0 } },
+    );
+    res.status(200).json({
+      message: `${result.modifiedCount} products reset to 0`,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.updateAllStock = async (req, res) => {
+  const { amount } = req.query;
+  try {
+    const result = await Product.updateMany({}, { $set: { stock: amount } });
+    res.status(200).json({
+      message: `${result.modifiedCount} products updated`,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
