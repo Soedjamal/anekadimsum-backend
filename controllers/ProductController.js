@@ -84,7 +84,7 @@ exports.updateProduct = async (req, res) => {
     if (name) updateFields.name = name;
     if (price) updateFields.price = price;
     if (stock) updateFields.stock = stock;
-    if (sold) updateFields.stock = sold;
+    if (sold) updateFields.sold = sold;
 
     if (req.file) {
       updateFields.thumbnail = req.file.path;
