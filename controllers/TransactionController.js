@@ -2,9 +2,28 @@ const Transaction = require("../models/Transaction");
 const Product = require("../models/Product");
 const midtransClient = require("midtrans-client");
 
+exports.getAllTransactions = async (req, res) => {
+  try {
+    const transactions = await Transaction.find();
+    return res.status(200).json(transactions);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.createTransaction = async (req, res) => {
   try {
     const { first_name, amount, quantity, product_id } = req.body;
+
+    if (quantity < 1) {
+      return res.status(400).json({ message: "Tambahkan produk minimal 1" });
+    }
+
+    if (first_name.trim() === "") {
+      return res
+        .status(400)
+        .json({ message: "Nama tidak di isi dengan benar" });
+    }
 
     const productData = await Product.findById({ _id: product_id });
     if (!productData || productData.stock < quantity) {
