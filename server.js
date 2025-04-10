@@ -73,6 +73,12 @@ app.get("/api", (_, res) => {
     status: "healthy",
   });
 });
+app.get("/", (_, res) => {
+  res.status(200).json({
+    message: "OK",
+    status: "healthy",
+  });
+});
 
 app.use((req, res, next) => {
   res.status(404).json({

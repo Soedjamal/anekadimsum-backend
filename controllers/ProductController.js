@@ -103,14 +103,14 @@ exports.updateProduct = async (req, res) => {
 
 exports.updateProductByTRX = async (req, res) => {
   const { id } = req.params;
-  const quantity = req.query
+  const qty = req.query.qty
 
   try {
 
     const result = await Product.findByIdAndUpdate(
       id,
       {
-        $inc: { stock: -quantity, sold: quantity },
+        $inc: { stock: -qty, sold: qty },
       },
       { new: true },
     );
