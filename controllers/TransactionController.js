@@ -49,7 +49,7 @@ exports.createTransaction = async (req, res) => {
         secure: true,
       },
       callbacks: {
-        finish: `${process.env.CLIENT_URL}/payment-success/${orderId}`,
+        finish: `${process.env.CLIENT_URL}/payment-success/${product_id}`,
       },
     };
 

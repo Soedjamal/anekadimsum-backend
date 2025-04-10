@@ -105,12 +105,9 @@ exports.updateProductByTRX = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const productData = await Transaction.findOne({
-      transaction_id: id,
-    }).select("product_id quantity");
 
     const result = await Product.findByIdAndUpdate(
-      productData.product_id,
+      id,
       {
         $inc: { stock: -productData.quantity, sold: productData.quantity },
       },
