@@ -67,13 +67,13 @@ app.use("/api/products", productRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/users", userRoutes);
 
-app.get("/api", (_, res) => {
+app.get("/api", (req, res) => {
   res.status(200).json({
     message: "OK",
     status: "healthy",
   });
 });
-app.get("/", (_, res) => {
+app.get("/", (req, res) => {
   res.status(200).json({
     message: "OK",
     status: "healthy",
